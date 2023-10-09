@@ -2,14 +2,16 @@
 
 ## Get Started
 
-### Building
+### Local Executable or Command Line Interface (CLI)
+
+#### Building
 
 Requirements:
 - gcc
 
 Afterwards run `build.win.bat` or `build.osx.sh` (also works for Linux) respectively
 
-### Usage
+#### Usage
 
 Run the just built binary like this:
 
@@ -28,6 +30,27 @@ If the following error message, pops up: `Assertion failed: aNumFrames > 0 && "W
 Try using the `--effect` flag like this: `SAJSON animation.sam --effect > animation.json`
 
 **Tip:** I personally use `.sajson` as an extension for generated json files in order to distinguish them more easily.
+
+### Web Assembly (WASM)
+
+### Building
+
+Requirements:
+- Emscripten: Recommend following [the instructions on the official Emscripten website](https://emscripten.org/docs/getting_started/downloads.html)
+
+Afterwards run `build.wasm.sh`, which will output a `sajson.js` and `sajson.wasm` file to the `dist` folder.
+
+**Note:** The `build.wasm.sh` script was developed using Windows Subsystem on Linux (specifically with Ubuntu), so it has a high likelihood on working on Linux and probably Mac. It has not been tested for building directly on a Windows machine without Windows Subsystem for Linux.
+
+### Usage
+
+![Screenshot of a webpage showing the output of the WASM build for a given SAM file on Firefox](./sajson_wasm_example.png)
+
+There is a web page built in `dist/index.html` that provides a basic UI for providing a URL to a SAM file and a checkbox for whether a given animation is an effect. The webpage must be hosted on a web server in order to run the code; the screenshot uses [the `serve` NPM package](https://github.com/vercel/serve#readme), but any way to host a web server should work.
+
+It is preferred that the SAM files are hosted locally to avoid issues trying to load the files due to CORS or other potential permissioning issues. The files could be placed within the `dist` folder to have them hosted by your local web server.
+
+For usage within your own application, refer to the code in `dist/index-worker.js`. A Worker is used for the web page to not block the main thread while loading the data, but it can be used on the main thread of a web page.
 
 ## Super Animation Explained
 

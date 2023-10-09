@@ -10,7 +10,11 @@ EM_JS(void, call_dispatchWindowEvent, (const char* eventName, const char* eventK
   const eventKeyAsString = UTF8ToString(eventKey);
   console.log("dispatching event", { eventNameAsString, eventKeyAsString });
 	const event = new CustomEvent(eventNameAsString, { detail: { key: eventKeyAsString } });
-  (window || self).dispatchEvent(event);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(event);
+  } else {
+    self.dispatchEvent(event);
+  }
 });
 
 static emscripten_fetch_t *lastFetch = NULL;
@@ -27,7 +31,7 @@ static emscripten_fetch_t *lastFetch = NULL;
  */
 
 void downloadSucceeded(emscripten_fetch_t *fetch) {
-  std::printf("Finished downloading %llu bytes from URL %s.\n", fetch->numBytes, fetch->url);
+  std::printf("Finished downloading %llu bytes from URL [%s].\n", fetch->numBytes, fetch->url);
   lastFetch = fetch;
   // NOTE: not scalable beyond one concurrent fetch
   std::string eventName = "sajsonfetchcompleted";
@@ -38,7 +42,7 @@ void downloadSucceeded(emscripten_fetch_t *fetch) {
 }
 
 void downloadFailed(emscripten_fetch_t *fetch) {
-  std::printf("Downloading %s failed, HTTP failure status code: %d.\n", fetch->url, fetch->status);
+  std::printf("Downloading [%s] failed, HTTP failure status code: %d.\n", fetch->url, fetch->status);
   lastFetch = fetch;
   // NOTE: not scalable beyond one concurrent fetch
   std::string eventName = "sajsonfetchcompleted";

@@ -225,7 +225,7 @@ char* getSamJsonString(bool effect){
 		result.append(createKeyValueJsonStringForNumber("mHeight", i->mHeight));
 
 		result.append("\"mTransform\":{\"mMatrix\":{");
-		result.append(createKeyValueJsonStringForString(
+		result.append(createKeyValueJsonString(
 			"m",
 			convert3x3MatrixToJsonString(i->mTransform.mMatrix.m).c_str(),
 			true
@@ -261,7 +261,7 @@ char* getSamJsonString(bool effect){
 			result.append(createKeyValueJsonStringForNumber("mObjectNum", j->mObjectNum));
 			result.append(createKeyValueJsonStringForNumber("mResNum", j->mResNum));
 			result.append("\"mTransform\":{\"mMatrix\":{");
-			result.append(createKeyValueJsonStringForString(
+			result.append(createKeyValueJsonString(
 				"m",
 				convert3x3MatrixToJsonString(j->mTransform.mMatrix.m).c_str(),
 				true

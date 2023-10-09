@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>SAJSON Converter - Web Assembly (WASM) Edition</title>
+	<style>
+		label {
+			display: flex;
+		}
+		label > input {
+			flex: 0;
+		}
+		label > input[type=text] {
+			flex: 1;
+		}
+		fieldset {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5em;
+		}
+
+		output {
+			display: block;
+			max-width: 100%;
+			overflow: auto;
+		}
+	</style>
+</head>
+<body>
+	<h1><abbr title="Super Animation to JSON">SAJSON</abbr> Converter - <abbr title="Web Assembly">WASM</abbr> Edition</h1>
+	<section>
+		<form id="sam-form">
+			<fieldset>
+				<legend>Input Options</legend>
+				<div>
+					<label>
+						SAM File URL:
+						<input type="text" required placeholder="e.g. ./some/path/to/file.sam" name="samFileUrl" id="samFileUrl"/>
+					</label>
+				</div>
+				<div>
+					<label>
+						Is Battle Effect?
+						<input type="checkbox" name="isBattleEffect" id="isBattleEffect"/>
+					</label>
+				</div>
+				<button type="submit" id="sam-form-submit">Get SAJSON Data</button>
+			</fieldset>
+		</form>
+	</section>
+	<section>
+		<h2>Output</h2>
+		<div>
+			<button disabled id="copy-json-button">Copy JSON</button>
+		</div>
+		<output for="samFileUrl isBattleEffect" form="sam-form" id="form-output">Output will appear here</output>
+	</section>
+	<script async type="text/javascript" src="./index.js"></script>
+</body>
+</html>
