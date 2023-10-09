@@ -3,6 +3,7 @@
 //
 // Copyright (c) 2013 Natural Style Co. Ltd.
 // Modified by iammathew 2022
+// Additionally modified for WASM support by BluuArc 2023
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -139,23 +140,12 @@ namespace SuperAnim{
 	}
 }
 
-static char* samB64Bytes;
-static size_t samSize;
-static unsigned char* lastFileLoadOutput = NULL;
 emscripten_fetch_t *lastFetch = NULL;
 
 unsigned char* GetFileData(const char* pszFileName, const char* pszMode, unsigned long * pSize) {
-	// if(lastFileLoadOutput != NULL) free(lastFileLoadOutput);
-
-	// lastFileLoadOutput = base64Decode(samB64Bytes);
-	// unsigned char * pBuffer = (unsigned char*) lastFileLoadOutput;
-	// *pSize = samSize;
-	// return pBuffer;
-
-	// if (lastFetch != NULL) {
-	// 	emscripten_fetch_close(lastFetch);
-	// }
-
+	if (lastFetch != NULL) {
+		emscripten_fetch_close(lastFetch);
+	}
 	lastFetch = getPrefetchedUrl();
 	*pSize = lastFetch->numBytes;
 	std::cout << "Using prefetched data of size " << lastFetch->numBytes << std::endl;
@@ -206,14 +196,11 @@ std::string convert3x3MatrixToJsonString(const float matrix[3][3]) {
 	return result;
 }
 
-// char* getSamJsonString(char* b64Bytes, size_t size, bool effect){
 char* getSamJsonString(bool effect){
-	// samB64Bytes = b64Bytes;
-	// samSize = size;
-
 	std::string fakeFile = "fake_file.sam";
 	SuperAnim::SuperAnimMainDef* p = SuperAnim::SuperAnimDefMgr::GetInstance()->Load_GetSuperAnimMainDef(fakeFile, effect);
 	std::cout << "converting to JSON" << std::endl;
+
 	std::string result;
 	result.append("{");
 
@@ -244,17 +231,7 @@ char* getSamJsonString(bool effect){
 			true
 		));
 		result.append("}}");
-		// result.append(stringFormat("\"mTransform\":{\"mMatrix\":{\"m\":[[%f,%f,%f],[%f,%f,%f],[%f,%f,%f]]}}",
-		// 	i->mTransform.mMatrix.m[0][0],
-		// 	i->mTransform.mMatrix.m[0][1],
-		// 	i->mTransform.mMatrix.m[0][2],
-		// 	i->mTransform.mMatrix.m[1][0],
-		// 	i->mTransform.mMatrix.m[1][1],
-		// 	i->mTransform.mMatrix.m[1][2],
-		// 	i->mTransform.mMatrix.m[2][0],
-		// 	i->mTransform.mMatrix.m[2][1],
-		// 	i->mTransform.mMatrix.m[2][2]
-		// ));
+
 		result.append("}");
 	}
 	result.append("],");
@@ -295,23 +272,6 @@ char* getSamJsonString(bool effect){
 			result.append(createKeyValueJsonStringForNumber("mBlue", j->mColor.mBlue));
 			result.append(createKeyValueJsonStringForNumber("mAlpha", j->mColor.mAlpha, true));
 			result.append("}}");
-			// result.append(stringFormat("{\"mObjectNum\":%d,\"mResNum\":%d,\"mTransform\":{\"mMatrix\":{\"m\":[[%f,%f,%f],[%f,%f,%f],[%f,%f,%f]]}},\"mColor\":{\"mRed\":%d,\"mGreen\":%d,\"mBlue\":%d,\"mAlpha\":%d}}",
-			// 	j->mObjectNum,
-			// 	j->mResNum,
-			// 	j->mTransform.mMatrix.m[0][0],
-			// 	j->mTransform.mMatrix.m[0][1],
-			// 	j->mTransform.mMatrix.m[0][2],
-			// 	j->mTransform.mMatrix.m[1][0],
-			// 	j->mTransform.mMatrix.m[1][1],
-			// 	j->mTransform.mMatrix.m[1][2],
-			// 	j->mTransform.mMatrix.m[2][0],
-			// 	j->mTransform.mMatrix.m[2][1],
-			// 	j->mTransform.mMatrix.m[2][2],
-			// 	j->mColor.mRed,
-			// 	j->mColor.mGreen,
-			// 	j->mColor.mBlue,
-			// 	j->mColor.mAlpha
-			// ));
 		}
 		result.append("]}");
 	}
@@ -330,17 +290,11 @@ char* getSamJsonString(bool effect){
 		result.append(createKeyValueJsonStringForNumber("mStartFrameNum", i->mStartFrameNum));
 		result.append(createKeyValueJsonStringForNumber("mEndFrameNum", i->mEndFrameNum, true));
 		result.append("}");
-		// result.append(stringFormat("{\"mLabelName\":\"%s\",\"mStartFrameNum\":%d,\"mEndFrameNum\":%d}",
-		// 	i->mLabelName.c_str(),
-		// 	i->mStartFrameNum,
-		// 	i->mEndFrameNum
-		// ));
 	}
 	result.append("]");
 
 	result.append("}");
 
-	// if(lastFileLoadOutput != NULL) free(lastFileLoadOutput);
 	if (lastFetch != NULL) {
 		emscripten_fetch_close(lastFetch);
 		lastFetch = NULL;
@@ -349,9 +303,6 @@ char* getSamJsonString(bool effect){
 }
 
 extern "C" {
-	// char* get_sam_json(char* b64Bytes, size_t size, bool effect) {
-	// 	return getSamJsonString(b64Bytes, size, effect);
-	// }
 	int prefetch_url(char* url) {
 		prefetchUrl(url);
 		return 0;
