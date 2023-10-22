@@ -33,11 +33,23 @@ function getSamJson(url, isEffect = false) {
 		}, { once: true });
 		wasmModule.ccall("prefetch_url", "number", ["string"], [url]);
 	})).then(() => {
-		console.log("[sajson-worker] calling get_sam_json_string");
-		const samJsonString = wasmModule.ccall("get_sam_json_string", "string", ["boolean"], [isEffect]);
-		const samJson = JSON.parse(samJsonString);
-		wasmModule.ccall("clear_prefetched_data", "number", []);
-		return samJson;
+		const failurePromise = new Promise((_, reject) => {
+			Module.onAbort = (err) => {
+				delete Module.onAbort;
+				reject(err);
+			};
+		});
+		const successPromise = Promise.resolve()
+			.then(() => {
+				console.log("[sajson-worker] calling get_sam_json_string");
+				const samJsonString = wasmModule.ccall("get_sam_json_string", "string", ["boolean"], [isEffect]);
+				const samJson = JSON.parse(samJsonString);
+				console.log("[sajson-worker] calling clear_prefetched_data");
+				wasmModule.ccall("clear_prefetched_data", "number", []);
+				delete Module.onAbort;
+				return samJson;
+			});
+		return Promise.race([successPromise, failurePromise]);
 	});
 }
 

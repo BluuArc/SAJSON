@@ -3,6 +3,10 @@
 	const copyJsonButton = document.getElementById("copy-json-button");
 	const submitButton = document.getElementById("sam-form-submit");
 	let latestSajsonData;
+	/**
+	 * @type {Worker}
+	 */
+	let worker;
 
 	/**
 	 * @param {{ data: WorkerResultData }} event
@@ -44,8 +48,16 @@
 		copyJsonButton.removeEventListener("click", copySajsonDataToClipboard);
 		copyJsonButton.setAttribute("disabled", "");
 		console.error(errorMessage);
-		logStatus(`An error has occurred.\n${errorMessage.message || errorMessage}`);
+		let errorMessageToDisplay = errorMessage.message || errorMessage;
+		if (errorMessageToDisplay?.includes?.("We don't have valid frames")) {
+			errorMessageToDisplay += "\nSuggestion: Change the value of the Battle Effect checkbox and try again."
+		}
+		logStatus(`An error has occurred.\n${errorMessageToDisplay}`);
 		submitButton.removeAttribute("disabled");
+
+		// terminate worker as WASM runtime has likely exited on error
+		worker.terminate();
+		worker = null;
 	}
 
 	/**
@@ -60,10 +72,6 @@
 		}
 	}
 
-	/**
-	 * @type {Worker}
-	 */
-	let worker;
 	/**
 	 * @param {WorkerCommandData} commandData
 	 */
