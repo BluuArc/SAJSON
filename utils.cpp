@@ -52,10 +52,8 @@ void downloadFailed(emscripten_fetch_t *fetch) {
 }
 
 void prefetchUrl(char* url) {
-  if (lastFetch != NULL) {
-		emscripten_fetch_close(lastFetch);
-		lastFetch = NULL;
-	}
+  clearPrefetchedData();
+
   emscripten_fetch_attr_t attr;
   emscripten_fetch_attr_init(&attr);
   std::strcpy(attr.requestMethod, "GET");
@@ -67,4 +65,12 @@ void prefetchUrl(char* url) {
 
 emscripten_fetch_t *getPrefetchedUrl() {
   return lastFetch;
+}
+
+void clearPrefetchedData() {
+  if (lastFetch != NULL) {
+		emscripten_fetch_close(lastFetch);
+		lastFetch = NULL;
+    std::printf("Cleared prefetched data.\n");
+	}
 }

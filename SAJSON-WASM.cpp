@@ -143,9 +143,6 @@ namespace SuperAnim{
 emscripten_fetch_t *lastFetch = NULL;
 
 unsigned char* GetFileData(const char* pszFileName, const char* pszMode, unsigned long * pSize) {
-	if (lastFetch != NULL) {
-		emscripten_fetch_close(lastFetch);
-	}
 	lastFetch = getPrefetchedUrl();
 	*pSize = lastFetch->numBytes;
 	std::cout << "Using prefetched data of size " << lastFetch->numBytes << std::endl;
@@ -197,6 +194,7 @@ std::string convert3x3MatrixToJsonString(const float matrix[3][3]) {
 }
 
 char* getSamJsonString(bool effect){
+	// expect that prefetchUrl was called beforehand to preload the data into memory
 	std::string fakeFile = "fake_file.sam";
 	SuperAnim::SuperAnimMainDef* p = SuperAnim::SuperAnimDefMgr::GetInstance()->Load_GetSuperAnimMainDef(fakeFile, effect);
 	std::cout << "converting to JSON" << std::endl;
@@ -249,7 +247,6 @@ char* getSamJsonString(bool effect){
 			result.append(",");
 		}
 		bool firstObject = true;
-		std::cout << "converting mObjectVector of size " << i->mObjectVector.size() << std::endl;
 		result.append("{ \"mObjectVector\":[");
 		for(SuperAnim::SuperAnimObjectVector::const_iterator j=i->mObjectVector.begin(); j!=i->mObjectVector.end(); ++j){
 			if (firstObject) {
@@ -295,10 +292,8 @@ char* getSamJsonString(bool effect){
 
 	result.append("}");
 
-	if (lastFetch != NULL) {
-		emscripten_fetch_close(lastFetch);
-		lastFetch = NULL;
-	}
+	lastFetch = NULL;
+	SuperAnim::SuperAnimDefMgr::GetInstance()->UnloadSuperAnimMainDef(fakeFile);
 	return (char*) result.c_str();
 }
 
@@ -309,5 +304,9 @@ extern "C" {
 	}
 	char* get_sam_json_string(bool effect) {
 		return getSamJsonString(effect);
+	}
+	int clear_prefetched_data() {
+		clearPrefetchedData();
+		return 0;
 	}
 }

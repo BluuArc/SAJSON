@@ -5,6 +5,19 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>SAJSON Converter - Web Assembly (WASM) Edition</title>
 	<style>
+		body {
+			margin: 0;
+			padding: 0.5em;
+			display: flex;
+			flex-direction: column;
+			max-height: calc(100vh - 1em);
+			overflow: hidden;
+		}
+		.output-section {
+			display: flex;
+			flex-direction: column;
+			overflow: hidden;
+		}
 		label {
 			display: flex;
 		}
@@ -19,11 +32,11 @@
 			flex-direction: column;
 			gap: 0.5em;
 		}
-
 		output {
 			display: block;
 			max-width: 100%;
 			overflow: auto;
+			min-height: 0;
 		}
 	</style>
 </head>
@@ -49,7 +62,7 @@
 			</fieldset>
 		</form>
 	</section>
-	<section>
+	<section class="output-section">
 		<h2>Output</h2>
 		<div>
 			<button disabled id="copy-json-button">Copy JSON</button>

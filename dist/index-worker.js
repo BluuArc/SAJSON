@@ -34,8 +34,9 @@ function getSamJson(url, isEffect = false) {
 		wasmModule.ccall("prefetch_url", "number", ["string"], [url]);
 	})).then(() => {
 		console.log("[sajson-worker] calling get_sam_json_string");
-		const samJsonString = wasmModule.ccall("get_sam_json_string", "string", ["boolean"], [isEffect])
+		const samJsonString = wasmModule.ccall("get_sam_json_string", "string", ["boolean"], [isEffect]);
 		const samJson = JSON.parse(samJsonString);
+		wasmModule.ccall("clear_prefetched_data", "number", []);
 		return samJson;
 	});
 }

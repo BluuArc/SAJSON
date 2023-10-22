@@ -8,12 +8,14 @@
 	 * @param {{ data: WorkerResultData }} event
 	 */
 	function handleWorkerMessage(event) {
+		console.timeEnd("worker command");
 		console.log("got result from worker", event);
 		if (event?.data?.success) {
 			handleSuccessfulResult(event.data.result);
 		} else {
 			handleFailedResult(event?.data?.result);
 		}
+		console.groupEnd("Worker Command Output");
 	}
 
 	function copySajsonDataToClipboard() {
@@ -66,19 +68,19 @@
 	 * @param {WorkerCommandData} commandData
 	 */
 	async function runCommandInWorker(commandData) {
-		if (worker) {
-			// start with a new worker as re-using the same context can potentially hang
-			worker.terminate();
+		console.time("worker command");
+		console.group("Worker Command Output");
+		if (!worker) {
+			worker = new Worker("./index-worker.js");
+			await new Promise((resolve) => {
+				worker.addEventListener("message", (e) => {
+					if (e.data?.command === "ready" && e.data?.success) {
+						resolve();
+					}
+				}, { once: true });
+			});
+			worker.addEventListener("message", handleWorkerMessage);
 		}
-		worker = new Worker("./index-worker.js");
-		await new Promise((resolve) => {
-			worker.addEventListener("message", (e) => {
-				if (e.data?.command === "ready" && e.data?.success) {
-					resolve();
-				}
-			}, { once: true });
-		});
-		worker.addEventListener("message", handleWorkerMessage);
 		worker.postMessage(commandData);
 	}
 

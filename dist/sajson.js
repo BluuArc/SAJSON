@@ -5295,6 +5295,7 @@ var wasmExports = createWasm();
 var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors');
 var _prefetch_url = Module['_prefetch_url'] = createExportWrapper('prefetch_url');
 var _get_sam_json_string = Module['_get_sam_json_string'] = createExportWrapper('get_sam_json_string');
+var _clear_prefetched_data = Module['_clear_prefetched_data'] = createExportWrapper('clear_prefetched_data');
 var _malloc = createExportWrapper('malloc');
 var _free = createExportWrapper('free');
 var ___errno_location = createExportWrapper('__errno_location');
@@ -5313,8 +5314,8 @@ var dynCall_viijii = Module['dynCall_viijii'] = createExportWrapper('dynCall_vii
 var dynCall_iiiiij = Module['dynCall_iiiiij'] = createExportWrapper('dynCall_iiiiij');
 var dynCall_iiiiijj = Module['dynCall_iiiiijj'] = createExportWrapper('dynCall_iiiiijj');
 var dynCall_iiiiiijj = Module['dynCall_iiiiiijj'] = createExportWrapper('dynCall_iiiiiijj');
-var ___start_em_js = Module['___start_em_js'] = 83820;
-var ___stop_em_js = Module['___stop_em_js'] = 84241;
+var ___start_em_js = Module['___start_em_js'] = 83804;
+var ___stop_em_js = Module['___stop_em_js'] = 84225;
 
 // include: postamble.js
 // === Auto-generated postamble setup entry stuff ===
