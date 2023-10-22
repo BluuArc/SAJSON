@@ -16,10 +16,13 @@
 		console.log("got result from worker", event);
 		if (event?.data?.success) {
 			handleSuccessfulResult(event.data.result);
+			console.groupEnd("Worker Command Output");
+			return event.data.result;
 		} else {
 			handleFailedResult(event?.data?.result);
+			console.groupEnd("Worker Command Output");
+			throw event?.data?.result || new Error("An error occurred");
 		}
-		console.groupEnd("Worker Command Output");
 	}
 
 	function copySajsonDataToClipboard() {
@@ -87,9 +90,18 @@
 					}
 				}, { once: true });
 			});
-			worker.addEventListener("message", handleWorkerMessage);
 		}
-		worker.postMessage(commandData);
+		return new Promise((resolve, reject) => {
+			worker.addEventListener("message", (...args) => {
+				try {
+					const result = handleWorkerMessage(...args);
+					resolve(result);
+				} catch (err) {
+					reject(err);
+				}
+			}, { once: true });
+			worker.postMessage(commandData);
+		});
 	}
 
 	document.getElementById("sam-form").addEventListener("submit", (e) => {
