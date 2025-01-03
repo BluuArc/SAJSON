@@ -30,7 +30,6 @@
 #include <map>
 #include <algorithm>
 #include "SuperAnimCommon.h"
-#include "utils.h"
 #include <iostream>
 
 #define SAM_VERSION 1
@@ -140,14 +139,14 @@ namespace SuperAnim{
 	}
 }
 
-emscripten_fetch_t *lastFetch = NULL;
+unsigned char* lastBuffer = NULL;
+unsigned long lastBufferSize = 0;
 
 unsigned char* GetFileData(const char* pszFileName, const char* pszMode, unsigned long * pSize) {
-	lastFetch = getPrefetchedUrl();
-	*pSize = lastFetch->numBytes;
-	std::cout << "Using prefetched data of size " << lastFetch->numBytes << std::endl;
+	*pSize = lastBufferSize;
+	std::cout << "Using prefetched data of size " << lastBufferSize << std::endl;
 
-	return (unsigned char *) lastFetch->data;
+	return lastBuffer;
 }
 
 std::string createKeyValueJsonString(const char* key, const char* value, bool is_end = false) {
@@ -292,21 +291,14 @@ char* getSamJsonString(bool effect){
 
 	result.append("}");
 
-	lastFetch = NULL;
 	SuperAnim::SuperAnimDefMgr::GetInstance()->UnloadSuperAnimMainDef(fakeFile);
 	return (char*) result.c_str();
 }
 
 extern "C" {
-	int prefetch_url(char* url) {
-		prefetchUrl(url);
-		return 0;
-	}
-	char* get_sam_json_string(bool effect) {
+	char* get_sam_json_string(unsigned char* dataBuffer, unsigned long dataSize, bool effect) {
+		lastBuffer = dataBuffer;
+		lastBufferSize = dataSize;
 		return getSamJsonString(effect);
-	}
-	int clear_prefetched_data() {
-		clearPrefetchedData();
-		return 0;
 	}
 }

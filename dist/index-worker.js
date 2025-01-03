@@ -11,7 +11,6 @@ importScripts("./sajson.js");
  * @prop {(function_name: string, jsReturnType: string, jsArgTypes: string[], args: any[]) => any} ccall
  */
 
-
 /**
  * @param {string} url Path to SAM file.
  * @param {boolean} isEffect Whether the SAM animation is a battle effect. Battle effects have a slightly different data structure.
@@ -22,17 +21,18 @@ function getSamJson(url, isEffect = false) {
 	 * @type {EmscriptenWasmModule}
 	 */
 	const wasmModule = Module;
-	return (new Promise((resolve, reject) => {
-		self.addEventListener("sajsonfetchcompleted", ({ detail }) => {
-			console.log("[sajson-worker] got fetch result", detail);
-			if (detail.key === "success") {
-				resolve();
+	const samData = fetch(url)
+		.then((r) => {
+			let result;
+			if (typeof r.bytes === "function") {
+				result = r.bytes();
 			} else {
-				reject(`Failed to retrieve file at URL [${url}] with [isEffect=${isEffect}]. See browser log for info.`);
+				console.log("[sajson-worker] bytes() is not a function; using fallback");
+				result = r.arrayBuffer().then((b) => new Uint8Array(b));
 			}
-		}, { once: true });
-		wasmModule.ccall("prefetch_url", "number", ["string"], [url]);
-	})).then(() => {
+			return result;
+		});
+	return samData.then((data) => {
 		const failurePromise = new Promise((_, reject) => {
 			Module.onAbort = (err) => {
 				delete Module.onAbort;
@@ -41,11 +41,16 @@ function getSamJson(url, isEffect = false) {
 		});
 		const successPromise = Promise.resolve()
 			.then(() => {
+				console.log("[sajson-worker] allocating buffer of size:", data.length);
+				// based off of fetch code at https://github.com/emscripten-core/emscripten/blob/5e3ed77b2609dfe5b186249207466e2e2ad7e3e1/src/Fetch.js#L394-L405
+				// and memory access docs at https://emscripten.org/docs/porting/connecting_cpp_and_javascript/Interacting-with-code.html#access-memory-from-javascript
+				const ptr = Module._malloc(data.length);
+				Module.HEAPU8.set(data, ptr);
 				console.log("[sajson-worker] calling get_sam_json_string");
-				const samJsonString = wasmModule.ccall("get_sam_json_string", "string", ["boolean"], [isEffect]);
+				const samJsonString = wasmModule.ccall("get_sam_json_string", "string", ["number", "number", "boolean"], [ptr, data.length, isEffect]);
 				const samJson = JSON.parse(samJsonString);
-				console.log("[sajson-worker] calling clear_prefetched_data");
-				wasmModule.ccall("clear_prefetched_data", "number", []);
+				console.log("[sajson-worker] freeing buffer");
+				Module._free(ptr);
 				delete Module.onAbort;
 				return samJson;
 			});
@@ -111,4 +116,5 @@ readyPromise.then(() => {
 	};
 	self.postMessage(returnValue);
 	console.log("[sajson-worker] ready");
+	console.log("[sajson-worker] module keys", Object.keys(Module))
 });
