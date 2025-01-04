@@ -50,7 +50,9 @@ There is a web page built in `dist/index.html` that provides a basic UI for prov
 
 It is preferred that the SAM files are hosted locally to avoid issues trying to load the files due to CORS or other potential permissioning issues. The files could be placed within the `dist` folder to have them hosted by your local web server.
 
-For usage within your own application, refer to the code in `dist/index-worker.js`. A Worker is used for the web page to not block the main thread while loading the data, but it can be used on the main thread of a web page.
+For direct usage within your own application, refer to the code in `dist/index-worker.js` for direct usage and `dist/index.js` for loading the module from a worker. A Worker is used for the web page to not block the main thread while loading the data (and for easily reloading the module in case it gets in a bad state), but it can be used on the main thread of a web page.
+
+Additionally, there is a `dist/index-node.js` file that can parse a SAM file via Node.js using the same `index-worker.js` file under the hood. Modify the file parameters within its `main` function then run `node index-node.js` from the `dist` folder to have it output the parsed JSON as a console log. As of Jan 2025, this has only been tested on Node 20, but it is likely that higher versions of Node.js will work.
 
 ## Super Animation Explained
 
