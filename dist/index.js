@@ -111,7 +111,7 @@
 		const formData = new FormData(e.target);
 		console.log(formData);
 		runCommandInWorker({
-			command: "getSamJson",
+			command: "getSamJsonFromUrl",
 			args: [formData.get("samFileUrl"), formData.get("isBattleEffect") === "on"],
 		});
 	});

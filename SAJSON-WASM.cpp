@@ -196,6 +196,9 @@ char* getSamJsonString(bool effect){
 	// expect that prefetchUrl was called beforehand to preload the data into memory
 	std::string fakeFile = "fake_file.sam";
 	SuperAnim::SuperAnimMainDef* p = SuperAnim::SuperAnimDefMgr::GetInstance()->Load_GetSuperAnimMainDef(fakeFile, effect);
+	if (p == NULL) {
+		return NULL;
+	}
 	std::cout << "converting to JSON" << std::endl;
 
 	std::string result;

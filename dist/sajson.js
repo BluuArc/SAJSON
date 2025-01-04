@@ -155,26 +155,7 @@ if (ENVIRONMENT_IS_WORKER) {
   }
 
   readAsync = async (url) => {
-    // Fetch has some additional restrictions over XHR, like it can't be used on a file:// url.
-    // See https://github.com/github/fetch/pull/92#issuecomment-140665932
-    // Cordova or Electron apps are typically loaded from a file:// url.
-    // So use XHR on webview if URL is a file URL.
-    if (isFileURI(url)) {
-      return new Promise((resolve, reject) => {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.responseType = 'arraybuffer';
-        xhr.onload = () => {
-          if (xhr.status == 200 || (xhr.status == 0 && xhr.response)) { // file URLs can return 0
-            resolve(xhr.response);
-            return;
-          }
-          reject(xhr.status);
-        };
-        xhr.onerror = reject;
-        xhr.send(null);
-      });
-    }
+    assert(!isFileURI(url), "readAsync does not work with file:// URLs");
     var response = await fetch(url, { credentials: 'same-origin' });
     if (response.ok) {
       return response.arrayBuffer();
@@ -231,6 +212,8 @@ var JSFILEFS = 'JSFILEFS is no longer included by default; build with -ljsfilefs
 var OPFS = 'OPFS is no longer included by default; build with -lopfs.js';
 
 var NODEFS = 'NODEFS is no longer included by default; build with -lnodefs.js';
+
+assert(!ENVIRONMENT_IS_WEB, 'web environment detected but not enabled at build time.  Add `web` to `-sENVIRONMENT` to enable.');
 
 assert(!ENVIRONMENT_IS_SHELL, 'shell environment detected but not enabled at build time.  Add `shell` to `-sENVIRONMENT` to enable.');
 
@@ -638,8 +621,6 @@ async function instantiateAsync(binary, binaryFile, imports) {
   if (!binary &&
       typeof WebAssembly.instantiateStreaming == 'function' &&
       !isDataURI(binaryFile) &&
-      // Don't use streaming for file:// delivered objects in a webview, fetch them synchronously.
-      !isFileURI(binaryFile) &&
       // Avoid instantiateStreaming() on Node.js environment for now, as while
       // Node.js v18.1.0 implements it, it does not have a full fetch()
       // implementation yet.
@@ -1556,14 +1537,6 @@ function dbg(...args) {
   
           if (bytesRead > 0) {
             result = buf.slice(0, bytesRead).toString('utf-8');
-          }
-        } else
-        if (typeof window != 'undefined' &&
-          typeof window.prompt == 'function') {
-          // Browser.
-          result = window.prompt('Input: ');  // returns null on cancel
-          if (result !== null) {
-            result += '\n';
           }
         } else
         {}
